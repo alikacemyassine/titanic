@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة التنبؤ العشوائي - تيتانيك</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: right;
+        }
+        
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            margin: 2rem auto;
+            max-width: 900px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 20px 20px 0 0;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        
+        .header p {
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .content-container {
+            padding: 2rem;
+        }
+        
+        .passenger-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .passenger-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .info-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .info-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 0.5rem;
+        }
+        
+        .info-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .prediction-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        
+        .btn-predict {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            min-width: 150px;
+        }
+        
+        .btn-survived {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .btn-died {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+        
+        .btn-predict:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .result-container {
+            display: none;
+            margin-top: 2rem;
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+        }
+        
+        .result-correct {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+            color: white;
+        }
+        
+        .result-incorrect {
+            background: linear-gradient(135deg, #cb2d3e 0%, #ef473a 100%);
+            color: white;
+        }
+        
+        .result-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .probability-bar {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            height: 20px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+        
+        .probability-fill {
+            height: 100%;
+            transition: width 1s ease;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 2rem 0;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+            display: none;
+        }
+        
+        .navigation {
+            text-align: center;
+            margin-top: 2rem;
+        }
+        
+        .btn-new-passenger {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-new-passenger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+            color: white;
+        }
+        
+        .stats {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
+        
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="main-container">
+            <div class="header">
+                <h1><i class="fas fa-dice"></i> لعبة التنبؤ العشوائي</h1>
+                <p>توقع ما إذا كان هذا الراكب نجا من كارثة تيتانيك أم لا</p>
+                <div class="mt-3">
+                    <a href="/" class="btn btn-outline-light btn-sm me-2">
+                        <i class="fas fa-home"></i> الصفحة الرئيسية
+                    </a>
+                    <a href="/about" class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-info-circle"></i> حول المشروع
+                    </a>
+                </div>
+            </div>
+            
+            <div class="content-container">
+                <div class="passenger-card">
+                    <h3 class="text-center mb-4">
+                        <i class="fas fa-user"></i> معلومات الراكب
+                    </h3>
+                    
+                    <div class="passenger-info">
+                        <div class="info-item">
+                            <div class="info-label">الاسم</div>
+                            <div class="info-value">{{ passenger.name }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">اللقب</div>
+                            <div class="info-value">
+                                {% if passenger.title == 'Mr' %}السيد
+                                {% elif passenger.title == 'Mrs' %}السيدة
+                                {% elif passenger.title == 'Miss' %}الآنسة
+                                {% elif passenger.title == 'Master' %}الطفل
+                                {% elif passenger.title == 'Dr' %}الدكتور
+                                {% elif passenger.title == 'Rev' %}القس
+                                {% elif passenger.title == 'Col' %}العقيد
+                                {% elif passenger.title == 'Major' %}المقدم
+                                {% elif passenger.title == 'Capt' %}الكابتن
+                                {% elif passenger.title == 'Sir' %}السير
+                                {% elif passenger.title == 'Lady' %}الليدي
+                                {% elif passenger.title == 'the Countess' %}الكونتيسة
+                                {% elif passenger.title == 'Jonkheer' %}يونكهير
+                                {% elif passenger.title == 'Don' %}دون
+                                {% elif passenger.title == 'Mme' %}مدام
+                                {% elif passenger.title == 'Mlle' %}مدموازيل
+                                {% elif passenger.title == 'Ms' %}مس
+                                {% else %}{{ passenger.title }}{% endif %}
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">الجنس</div>
+                            <div class="info-value">
+                                {% if passenger.sex == 'male' %}ذكر{% else %}أنثى{% endif %}
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">العمر</div>
+                            <div class="info-value">
+                                {% if passenger.age %}{{ passenger.age }}{% else %}غير محدد{% endif %}
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">فئة الراكب</div>
+                            <div class="info-value">
+                                {% if passenger.pclass == 1 %}الدرجة الأولى
+                                {% elif passenger.pclass == 2 %}الدرجة الثانية
+                                {% else %}الدرجة الثالثة{% endif %}
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">سعر التذكرة</div>
+                            <div class="info-value">
+                                {% if passenger.fare %}{{ "%.2f"|format(passenger.fare) }}{% else %}غير محدد{% endif %}
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">الإخوة/الزوج</div>
+                            <div class="info-value">{{ passenger.sibsp }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">الآباء/الأطفال</div>
+                            <div class="info-value">{{ passenger.parch }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">ميناء المغادرة</div>
+                            <div class="info-value">
+                                {% if passenger.embarked == 'S' %}ساوثهامبتون
+                                {% elif passenger.embarked == 'C' %}شيربورغ
+                                {% else %}كوينزتاون{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <h4>هل تعتقد أن هذا الراكب نجا من كارثة تيتانيك؟</h4>
+                        <div class="prediction-buttons">
+                            <button class="btn btn-predict btn-survived" onclick="makePrediction(true)">
+                                <i class="fas fa-heart"></i> نجا
+                            </button>
+                            <button class="btn btn-predict btn-died" onclick="makePrediction(false)">
+                                <i class="fas fa-cross"></i> لم ينج
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>جاري تحليل البيانات...</p>
+                </div>
+                
+                <div class="error-message" id="errorMessage"></div>
+                
+                <div class="result-container" id="resultContainer">
+                    <div class="result-icon" id="resultIcon"></div>
+                    <h2 id="resultTitle"></h2>
+                    <p id="resultDescription"></p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <h5>احتمالية النجاة</h5>
+                            <div class="probability-bar">
+                                <div class="probability-fill" id="survivalBar" style="background: #4facfe; width: 0%"></div>
+                            </div>
+                            <p id="survivalProb"></p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>احتمالية الوفاة</h5>
+                            <div class="probability-bar">
+                                <div class="probability-fill" id="deathBar" style="background: #fa709a; width: 0%"></div>
+                            </div>
+                            <p id="deathProb"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="stats">
+                        <h5>النتيجة الفعلية</h5>
+                        <p id="actualResult"></p>
+                    </div>
+                </div>
+                
+                <div class="navigation">
+                    <button class="btn btn-new-passenger" onclick="loadNewPassenger()">
+                        <i class="fas fa-random"></i> راكب جديد
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Store current passenger data
+        const currentPassenger = {{ passenger | tojson }};
+        
+        function makePrediction(userPrediction) {
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('resultContainer').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
+            
+            // Disable prediction buttons
+            document.querySelectorAll('.btn-predict').forEach(btn => btn.disabled = true);
+            
+            // Send prediction request with user's prediction
+            const requestData = {
+                ...currentPassenger,
+                user_prediction: userPrediction
+            };
+            
+            fetch('/predict_random', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loading').style.display = 'none';
+                
+                if (data.error) {
+                    document.getElementById('errorMessage').textContent = data.error;
+                    document.getElementById('errorMessage').style.display = 'block';
+                    return;
+                }
+                
+                // Display result
+                const resultContainer = document.getElementById('resultContainer');
+                const resultIcon = document.getElementById('resultIcon');
+                const resultTitle = document.getElementById('resultTitle');
+                const resultDescription = document.getElementById('resultDescription');
+                const actualResult = document.getElementById('actualResult');
+                
+                if (data.correct) {
+                    resultContainer.className = 'result-container result-correct';
+                    resultIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+                    resultTitle.textContent = 'أحسنت! توقع صحيح';
+                    resultDescription.textContent = 'لقد توقعت بشكل صحيح!';
+                } else {
+                    resultContainer.className = 'result-container result-incorrect';
+                    resultIcon.innerHTML = '<i class="fas fa-times-circle"></i>';
+                    resultTitle.textContent = 'توقع خاطئ';
+                    resultDescription.textContent = 'حاول مرة أخرى مع راكب آخر!';
+                }
+                
+                // Show actual result
+                if (data.actual_survived) {
+                    actualResult.innerHTML = '<i class="fas fa-heart text-success"></i> نجا فعلاً من الكارثة';
+                } else {
+                    actualResult.innerHTML = '<i class="fas fa-cross text-danger"></i> لم ينج من الكارثة';
+                }
+                
+                // Update probabilities
+                const survivalProb = (data.survival_probability * 100).toFixed(1);
+                const deathProb = (data.death_probability * 100).toFixed(1);
+                
+                document.getElementById('survivalProb').textContent = survivalProb + '%';
+                document.getElementById('deathProb').textContent = deathProb + '%';
+                
+                // Animate probability bars
+                setTimeout(() => {
+                    document.getElementById('survivalBar').style.width = survivalProb + '%';
+                    document.getElementById('deathBar').style.width = deathProb + '%';
+                }, 100);
+                
+                resultContainer.style.display = 'block';
+            })
+            .catch(error => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('errorMessage').textContent = 'حدث خطأ أثناء التوقع.';
+                document.getElementById('errorMessage').style.display = 'block';
+            })
+            .finally(() => {
+                // Re-enable prediction buttons
+                document.querySelectorAll('.btn-predict').forEach(btn => btn.disabled = false);
+            });
+        }
+        
+
+        
+        function loadNewPassenger() {
+            // Reload the page to get a new random passenger
+            window.location.reload();
+        }
+    </script>
+</body>
+</html> 
